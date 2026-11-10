@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ha">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A B S TRANSPORT</title>
+<style>
+:root{--red:#c7192d;--dark:#151515;--panel:#222;--muted:#aaa}
+*{box-sizing:border-box}body{margin:0;background:#101010;color:#f5f5f5;font:16px Arial,sans-serif}
+header{background:linear-gradient(120deg,#171717,#380b12);padding:22px 16px;border-bottom:3px solid var(--red)}
+h1{margin:0;font-size:25px;letter-spacing:1px}header p{margin:7px 0 0;color:#ddd}
+main{max-width:1000px;margin:auto;padding:16px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+button,.tab{background:#333;color:white;border:1px solid #555;border-radius:8px;padding:11px 14px;font-weight:bold;cursor:pointer}
+button.primary,.tab.active{background:var(--red);border-color:var(--red)}
+.panel{background:var(--panel);border:1px solid #444;border-radius:12px;padding:16px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label{display:block;color:#ddd;font-size:13px;margin:10px 0 5px}
+input,select{width:100%;padding:12px;border-radius:7px;border:1px solid #555;background:#111;color:white}
+.stat{font-size:24px;font-weight:bold;color:#ff596b;margin-top:6px}
+.small{color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse;min-width:650px}th,td{padding:10px;border-bottom:1px solid #444;text-align:left}
+.tablewrap{overflow:auto} .hidden{display:none}.notice{background:#3b2b10;border-left:4px solid #e2a52b;padding:12px;border-radius:6px}
+</style>
+</head>
+<body>
+<header><h1>A B S TRANSPORT</h1><p>Tsarin kula da motocin haya da lissafin tafiya</p></header>
+<main>
+<div class="notice"><b>Sanarwa:</b> Wannan sigar gwaji ce. Bayanai suna ajiyewa a wannan browser/na'urar kawai; ba ta da cloud sync ko tsaron login na gaske tukuna.</div>
+<nav>
+<button class="tab active" data-tab="dashboard">Dashboard</button>
+<button class="tab" data-tab="vehicles">Motoci</button>
+<button class="tab" data-tab="trip">Sabuwar tafiya</button>
+<button class="tab" data-tab="trips">Tafiyoyi</button>
+</nav>
+<section id="dashboard" class="page">
+<div class="grid">
+<div class="panel"><div class="small">Yawan motoci</div><div class="stat" id="vehicleCount">1</div></div>
+<div class="panel"><div class="small">Yawan tafiyoyi</div><div class="stat" id="tripCount">0</div></div>
+<div class="panel"><div class="small">Jimillar kuɗin shiga</div><div class="stat" id="income">₦0</div></div>
+<div class="panel"><div class="small">Ribar kamfani</div><div class="stat" id="profit">₦0</div></div>
+</div>
+<div class="panel"><h2>Motar farko</h2><p><b>SHACMAN</b> · Lambar mota: MDB 619 XA · Direba: TIJJANI</p><p class="small">Flatbed · Axles 4 · Shekara 2020</p></div>
+</section>
+<section id="vehicles" class="page hidden">
+<div class="panel"><h2>Motoci</h2><p>SHACMAN — MDB 619 XA</p><p>Direba: TIJJANI · Waya: +234 808 376 6488</p><p class="small">Za a iya ƙara sauran motoci a sigar gaba.</p></div>
+</section>
+<section id="trip" class="page hidden">
+<div class="panel"><h2>Shigar da sabuwar tafiya</h2>
+<form id="tripForm" class="grid">
+<div><label>Abokin ciniki</label><input id="customer" required></div>
+<div><label>Lambar waya</label><input id="phone"></div>
+<div><label>Daga (Pickup)</label><input id="from" required placeholder="Kano"></div>
+<div><label>Zuwa (Delivery)</label><input id="to" required placeholder="Lagos"></div>
+<div><label>Kayan da aka ɗauka</label><input id="cargo"></div>
+<div><label>Kuɗin tafiya (₦)</label><input id="fare" type="number" min="0" required></div>
+<div><label>Diesel (lita)</label><input id="litres" type="number" min="0" value="0"></div>
+<div><label>Farashin lita (₦)</label><input id="dieselPrice" type="number" min="0" value="0"></div>
+<div><label>Gyara (₦)</label><input id="repairs" type="number" min="0" value="0"></div>
+<div><label>Kamasho (₦)</label><input id="kamasho" type="number" min="0" value="0"></div>
+<div><label>Kuɗin da aka karɓa (₦)</label><input id="paid" type="number" min="0" value="0"></div>
+<div><label>Ranar tafiya</label><input id="date" type="date"></div>
+<div style="grid-column:1/-1"><button class="primary" type="submit">Ajiye tafiya</button></div>
+</form>
+</div>
+</section>
+<section id="trips" class="page hidden">
+<div class="panel"><h2>Rikodin tafiyoyi</h2><div class="tablewrap"><table><thead><tr><th>Rana</th><th>Hanya</th><th>Kuɗi</th><th>Diesel</th><th>Gyara</th><th>Direba 10%</th><th>Kamasho</th><th>Riba</th><th>Bashi</th></tr></thead><tbody id="tripRows"></tbody></table></div></div>
+</section>
+</main>
+<script>
+const money=n=>'₦'+Number(n||0).toLocaleString('en-NG',{maximumFractionDigits:2});
+let trips=JSON.parse(localStorage.getItem('absTrips')||'[]');
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));document.getElementById(b.dataset.tab).classList.remove('hidden');}));
+document.getElementById('tripForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const v=id=>Number(document.getElementById(id).value||0);
+ const diesel=v('litres')*v('dieselPrice'), remaining=v('fare')-diesel-v('repairs'), driver=Math.max(0,remaining)*.10;
+ const profit=remaining-driver-v('kamasho');
+ trips.push({date:document.getElementById('date').value||new Date().toISOString().slice(0,10),route:document.getElementById('from').value+' → '+document.getElementById('to').value,fare:v('fare'),diesel,repairs:v('repairs'),driver,kamasho:v('kamasho'),profit,balance:Math.max(0,v('fare')-v('paid'))});
+ localStorage.setItem('absTrips',JSON.stringify(trips));e.target.reset();render();alert('An ajiye tafiya.');});
+function render(){document.getElementById('tripCount').textContent=trips.length;document.getElementById('income').textContent=money(trips.reduce((s,t)=>s+t.fare,0));document.getElementById('profit').textContent=money(trips.reduce((s,t)=>s+t.profit,0));document.getElementById('tripRows').innerHTML=trips.map(t=>`<tr><td>${t.date}</td><td>${t.route}</td><td>${money(t.fare)}</td><td>${money(t.diesel)}</td><td>${money(t.repairs)}</td><td>${money(t.driver)}</td><td>${money(t.kamasho)}</td><td>${money(t.profit)}</td><td>${money(t.balance)}</td></tr>`).join('');}
+render();
+</script>
+</body></html>
